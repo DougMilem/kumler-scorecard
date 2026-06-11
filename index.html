@@ -338,7 +338,7 @@ const BASE = { High: 20, Fair: 12, Low: 2 };
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let agents   = [];
-let expanded = {};
+let expanded = {};  // keyed by agent index
 
 // ─── LOAD ────────────────────────────────────────────────────────────────────
 async function loadSheet() {
@@ -523,8 +523,9 @@ function render() {
     return;
   }
 
-  document.getElementById('agentList').innerHTML = filtered.map(a => {
-    const isOpen = !!expanded[a.name];
+  document.getElementById('agentList').innerHTML = filtered.map((a, fi) => {
+    const globalIdx = agents.indexOf(a);
+    const isOpen = !!expanded[globalIdx];
     const ini    = a.name.split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase();
 
     const fmtPct = v => v === null ? 'N/A' : (v * 100).toFixed(1) + '%';
@@ -536,8 +537,8 @@ function render() {
       : '<span style="font-size:11px;color:var(--muted)">No deductions</span>';
 
     return `
-<div class="acard${isOpen ? ' open' : ''}" id="ac-${CSS.escape(a.name)}">
-  <div class="acard-head" onclick="toggle(${JSON.stringify(a.name)})">
+<div class="acard${isOpen ? ' open' : ''}" id="ac-${globalIdx}">
+  <div class="acard-head" onclick="toggle(${globalIdx})">
     <div class="avatar">${ini}</div>
     <span class="aname">${a.name}</span>
     <span class="rank-pill rank-${a.ranking}">${a.ranking}</span>
@@ -586,11 +587,11 @@ function render() {
 }
 
 // ─── INTERACTIONS ─────────────────────────────────────────────────────────────
-function toggle(name) {
-  expanded[name] = !expanded[name];
+function toggle(idx) {
+  expanded[idx] = !expanded[idx];
   render();
 }
-function expandAll()  { agents.forEach(a => expanded[a.name] = true);  render(); }
+function expandAll()  { agents.forEach((a, i) => expanded[i] = true);  render(); }
 function collapseAll(){ expanded = {};                                   render(); }
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
